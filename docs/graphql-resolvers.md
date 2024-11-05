@@ -1,13 +1,14 @@
----
-uri: "/docs/graphql-resolvers/"
-title: "GraphQL Resolvers"
----
+# \*Registering a field
 
 On this page you will find information about what GraphQL resolvers are and how they work. This page will be most useful for developers that are [already familiar with GraphQL](/docs/intro-to-graphql/).
 
 > Resolvers exist in *any* GraphQL implementation, not just WPGraphQL, but how they are implemented and the API for working with them varies from language to language, which is why you find this page under the WPGraphQL Concepts section.
+> 
+> 
 
 A GraphQL Schema consists of Types and Fields, which declares what is possible to be asked for. Resolvers are the functions that execute when a field is asked for.
+
+test
 
 When registering a field to the WPGraphQL Schema defining a resolver is optional.
 
@@ -15,7 +16,7 @@ When registering a field to the WPGraphQL Schema defining a resolver is optional
 
 Below is an example of registering a field to the Schema *without* a resolve function defined.
 
-```php
+```
 add_action( 'graphql_register_types', function() {
   register_graphql_field( 'RootQuery', 'hello', [
     'type' => 'String',
@@ -25,7 +26,7 @@ add_action( 'graphql_register_types', function() {
 
 This will add a `hello` field to the RootQuery in the Schema and will allow this query to be executed:
 
-```graphql
+```
 {
   hello
 }
@@ -33,7 +34,7 @@ This will add a `hello` field to the RootQuery in the Schema and will allow this
 
 However, if we were to execute this, the results would be a `null` value for the hello field, like so:
 
-```json
+```
 {
   "data": {
     "hello": null
@@ -47,7 +48,7 @@ This is because we registered the field to the Schema, but *did not* define a re
 
 Below is the same example as above, but with a resolve function included.
 
-```php
+```
 add_action( 'graphql_register_types', function() {
   register_graphql_field( 'RootQuery', 'hello', [
     'type' => 'String',
@@ -60,7 +61,7 @@ add_action( 'graphql_register_types', function() {
 
 Here we defined a `resolve` function and have it return the string `world`. So now, if the above query were executed again, the results would be:
 
-```json
+```
 {
   "data": {
     "hello": "world"
@@ -79,9 +80,10 @@ In GraphQL, all resolve functions get passed 4 function arguments which the reso
 - **\\$context (AppContext):** The 3rd argument is an instance of the AppContext class. This class is passed to every resolver and is used for things like DataLoading so resolvers can pull from centrally cached data instead of fetching fresh data, etc.
 - **\\$info (ResolveInfo):** The 4th argument is an instance of ResolveInfo, which can be used to determine things about where in the resolveTree the field is, what the Parent Type is, what fields have been selected on this Type, and more.
 
+
 To better understand how these function arguments work, let's add an argument to the `hello` field to accept a name as input:
 
-```php
+```
 add_action( 'graphql_register_types', function() {
   register_graphql_field( 'RootQuery', 'hello', [
     'type' => 'String',
@@ -107,7 +109,7 @@ In the resolve function, we added the 4 function arguments to the function call,
 
 Now we could query like so:
 
-```graphql
+```
 {
   hello( name: "Pam" )
 }
@@ -115,7 +117,7 @@ Now we could query like so:
 
 And we would get the following result:
 
-```json
+```
 {
   "data": {
     "hello": "Pam"
@@ -133,7 +135,7 @@ During GraphQL execution, the `graphql_pre_resolve_field` filter executes prior 
 
 This can be used like so:
 
-```php
+```
 add_filter( 'graphql_pre_resolve_field', function( $default, $source, $args, $context, $info, $type_name, $field_key, $field, $field_resolver ) {
 
  if ( 'rootquery' === strtolower( $type_name ) && 'hello' === $field_key ) {
@@ -149,7 +151,7 @@ This first checks if the filter is being applied to the `hello` field on the `Ro
 
 The same query for the `hello` field would now return the following:
 
-```json
+```
 {
   "data": {
     "hello": "custom value"
@@ -158,6 +160,8 @@ The same query for the `hello` field would now return the following:
 ```
 
 > **NOTE:** We used `strtolower()` to convert the type name to lowercase because behind the scenes WPGraphQL converts type names to lowercase strings, so it's always safest to check type names using all lowercase characters.
+> 
+> 
 
 [Learn more about the graphql\_pre\_resolve\_field filter](/filters/graphql_pre_resolve_field/).
 
@@ -169,7 +173,7 @@ Let's say we wanted to prefix the results of the `hello` field with something cu
 
 We could do that like so:
 
-```php
+```
 add_filter( 'graphql_resolve_field', function( $result, $source, $args, $context, $info, $type_name, $field_key, $field, $field_resolver ) {
 
   if ( 'rootquery' === strtolower( $type_name ) && 'hello' === $field_key ) {
@@ -183,7 +187,7 @@ add_filter( 'graphql_resolve_field', function( $result, $source, $args, $context
 
 Now executing the following query:
 
-```graphql
+```
 {
   hello( name: "Pam" )
 }
@@ -191,7 +195,7 @@ Now executing the following query:
 
 Would return the following, with our prefix before the existing results of the query:
 
-```json
+```
 {
   "data": {
     "hello": "some prefix Pam"
@@ -209,7 +213,7 @@ Let's say we wanted the `hello` field to *always* return the string "goodbye", n
 
 We could replace the resolve function for the field like so:
 
-```php
+```
 add_filter( 'graphql_RootQuery_fields', function( $fields ) {
 
     // First, make sure there's actually a "hello" field registered to the RootQuery Type
@@ -228,10 +232,11 @@ add_filter( 'graphql_RootQuery_fields', function( $fields ) {
 
 Now the same query for the hello field (with or without an input argument supplied to the query) would return the following:
 
-```json
+```
 {
   "data": {
     "hello": "goodbye"
   }
 }
 ```
+
